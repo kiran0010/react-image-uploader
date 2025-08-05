@@ -1,5 +1,5 @@
 {
-  "name": "@kiran0010/react-image-uploader",
+  "name": "react-image-uploader-kiran",
   "version": "1.0.0",
   "description": "A comprehensive React image uploader supporting Amazon S3, Cloudinary, and Firebase Storage",
   "main": "dist/index.js",
