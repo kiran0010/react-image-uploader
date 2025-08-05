@@ -1,5 +1,5 @@
 {
-  "name": "all-react-image-uploader",
+  "name": "allinone-react-image-uploader",
   "version": "1.0.0",
   "description": "A comprehensive React image uploader supporting Amazon S3, Cloudinary, and Firebase Storage",
   "main": "dist/index.js",
