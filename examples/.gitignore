@@ -90,9 +90,4 @@ jspm_packages/
 .dynamodb/
 
 # TernJS port file
-.tern-port
-
-# Test files
-test-image-*.jpg
-test-image-*.png
-test-image-*.gif 
+.tern-port 

@@ -1,5 +1,5 @@
-// API Functions
-export { uploadS3, uploadCloudinary, uploadFirebase, uploadMultiple } from './api/uploadFunctions';
+// API Functions - Only export S3 for browser compatibility
+export { uploadS3 } from './api/uploadFunctions';
 
 // React Components
 export { ImageUploader } from './components/ImageUploader';
@@ -19,4 +19,10 @@ export type {
 } from './types';
 
 // Utilities
-export { ImageProcessor } from './utils/imageProcessor'; 
+export { ImageProcessor } from './utils/imageProcessor';
+
+// Note: Cloudinary and Firebase uploaders are not exported by default
+// to avoid Node.js dependencies in browser environments.
+// If you need them, import them directly:
+// import { uploadCloudinary } from 'react-image-uploader/lib/cloudinary';
+// import { uploadFirebase } from 'react-image-uploader/lib/firebase'; 

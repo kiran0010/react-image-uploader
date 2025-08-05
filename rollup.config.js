@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
+import json from '@rollup/plugin-json';
 
 export default {
   input: 'src/index.ts',
@@ -21,14 +22,19 @@ export default {
   external: [
     'react',
     'react-dom',
-    'aws-sdk',
-    'cloudinary',
-    'firebase',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/s3-request-presigner',
     'uuid',
   ],
   plugins: [
-    resolve(),
-    commonjs(),
+    resolve({
+      preferBuiltins: false,
+      browser: true,
+    }),
+    commonjs({
+      transformMixedEsModules: true,
+    }),
+    json(),
     typescript({
       tsconfigOverride: {
         compilerOptions: {

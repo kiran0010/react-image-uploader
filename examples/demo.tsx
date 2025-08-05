@@ -1,35 +1,32 @@
 import React, { useState } from 'react';
 import { 
-  uploadS3, 
-  uploadCloudinary, 
-  uploadFirebase, 
-  uploadMultiple,
+  uploadS3,
   ImageUploader,
   UploadProgress 
 } from '../src/index';
-import { S3UploadOptions, CloudinaryUploadOptions, FirebaseUploadOptions, UploadResult } from '../src/types';
+import { S3UploadOptions, UploadResult } from '../src/types';
 
 // Example credentials (replace with your actual credentials)
 const DEMO_CREDENTIALS = {
   // S3
   s3: {
-    bucket: 'your-s3-bucket',
-    region: 'us-east-1',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'demo-access-key',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'demo-secret-key',
+    bucket: process.env.AWS_S3_BUCKET || 'your-s3-bucket',
+    region: process.env.AWS_REGION || 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
   // Cloudinary
   cloudinary: {
-    cloudName: 'your-cloud-name',
-    apiKey: process.env.CLOUDINARY_API_KEY || 'demo-api-key',
-    apiSecret: process.env.CLOUDINARY_API_SECRET || 'demo-api-secret',
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'your-cloud-name',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
   },
   // Firebase
   firebase: {
-    storageBucket: 'your-project.appspot.com',
-    projectId: 'your-project-id',
-    privateKey: process.env.FIREBASE_PRIVATE_KEY || 'demo-private-key',
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'demo@example.com',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'your-project.appspot.com',
+    projectId: process.env.FIREBASE_PROJECT_ID || 'your-project-id',
+    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
   },
 };
 
@@ -84,117 +81,15 @@ export const UploadDemo: React.FC = () => {
   };
 
   const handleCloudinaryUpload = async () => {
-    if (!selectedFile) return;
-
-    setIsUploading(true);
-    setProgress({ loaded: 0, total: 0, percentage: 0 });
-
-    try {
-      const options: CloudinaryUploadOptions = {
-        file: selectedFile,
-        ...DEMO_CREDENTIALS.cloudinary,
-        folder: 'demo-uploads',
-        publicId: `demo-${Date.now()}`,
-        transformations: {
-          resize: {
-            width: 1200,
-            height: 800,
-            fit: 'contain',
-          },
-          rotate: 0,
-          quality: 0.8,
-          format: 'png',
-        },
-        onProgress: (progress) => {
-          setProgress(progress);
-        },
-      };
-
-      const result = await uploadCloudinary(options);
-      setResults(prev => [...prev, result]);
-      alert(`Cloudinary Upload successful! URL: ${result.url}`);
-    } catch (error) {
-      alert(`Cloudinary Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsUploading(false);
-      setProgress(null);
-    }
+    alert('Cloudinary upload not available in this demo. Please use S3 upload instead.');
   };
 
   const handleFirebaseUpload = async () => {
-    if (!selectedFile) return;
-
-    setIsUploading(true);
-    setProgress({ loaded: 0, total: 0, percentage: 0 });
-
-    try {
-      const options: FirebaseUploadOptions = {
-        file: selectedFile,
-        ...DEMO_CREDENTIALS.firebase,
-        folder: 'demo-uploads',
-        fileName: `demo-${Date.now()}.jpg`,
-        transformations: {
-          crop: {
-            x: 0,
-            y: 0,
-            width: 400,
-            height: 300,
-          },
-          quality: 0.7,
-          format: 'jpeg',
-        },
-        onProgress: (progress) => {
-          setProgress(progress);
-        },
-      };
-
-      const result = await uploadFirebase(options);
-      setResults(prev => [...prev, result]);
-      alert(`Firebase Upload successful! URL: ${result.url}`);
-    } catch (error) {
-      alert(`Firebase Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsUploading(false);
-      setProgress(null);
-    }
+    alert('Firebase upload not available in this demo. Please use S3 upload instead.');
   };
 
   const handleMultipleUpload = async () => {
-    if (!selectedFile) return;
-
-    setIsUploading(true);
-    setProgress({ loaded: 0, total: 0, percentage: 0 });
-
-    try {
-      // Create multiple files for demo
-      const files = [
-        selectedFile,
-        new File([selectedFile], 'copy1.jpg', { type: selectedFile.type }),
-        new File([selectedFile], 'copy2.jpg', { type: selectedFile.type }),
-      ];
-
-      const baseOptions = {
-        ...DEMO_CREDENTIALS.s3,
-        folder: 'demo-batch',
-      };
-
-      const results = await uploadMultiple(
-        uploadS3,
-        files,
-        baseOptions,
-        (fileIndex, progress) => {
-          setProgress({ ...progress, fileIndex });
-        }
-      );
-
-      setResults(prev => [...prev, ...results]);
-      alert(`Multiple upload successful! Uploaded ${results.length} files`);
-    } catch (error) {
-      alert(`Multiple upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsUploading(false);
-      setProgress(null);
-    }
+    alert('Multiple upload not available in this demo. Please use S3 upload instead.');
   };
 
   const handleUrlUpload = async () => {
@@ -301,7 +196,10 @@ export const UploadDemo: React.FC = () => {
         <h3>React Component Demo:</h3>
         <ImageUploader
           uploadType="s3"
-          uploadOptions={DEMO_CREDENTIALS.s3}
+          uploadOptions={{
+            ...DEMO_CREDENTIALS.s3,
+            file: selectedFile || new File([''], 'placeholder.jpg')
+          }}
           onUploadComplete={(result) => {
             setResults(prev => [...prev, result]);
             alert(`Component upload successful! URL: ${result.url}`);

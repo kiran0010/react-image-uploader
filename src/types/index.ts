@@ -36,6 +36,7 @@ export interface S3UploadOptions extends BaseUploadOptions {
   accessKeyId: string;
   secretAccessKey: string;
   folder?: string;
+  // Note: ACL is deprecated for modern S3 buckets with Object Ownership enabled
   acl?: 'private' | 'public-read' | 'public-read-write' | 'authenticated-read';
 }
 

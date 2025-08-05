@@ -1,9 +1,9 @@
-import AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { S3UploadOptions, UploadResult, UploadProgress } from '../types';
 import { ImageProcessor } from '../utils/imageProcessor';
 
 export class S3Uploader {
-  private s3!: AWS.S3;
+  private s3Client!: S3Client;
   private imageProcessor: ImageProcessor;
 
   constructor() {
@@ -12,12 +12,21 @@ export class S3Uploader {
 
   async uploadS3(options: S3UploadOptions): Promise<UploadResult> {
     try {
-      // Configure AWS
-      this.s3 = new AWS.S3({
-        accessKeyId: options.accessKeyId,
-        secretAccessKey: options.secretAccessKey,
+      // Configure AWS SDK v3
+      const awsConfig: any = {
+        credentials: {
+          accessKeyId: options.accessKeyId,
+          secretAccessKey: options.secretAccessKey,
+        },
         region: options.region,
-      });
+      };
+
+      // Add session token if provided (for temporary credentials)
+      if ((options as any).sessionToken) {
+        awsConfig.credentials.sessionToken = (options as any).sessionToken;
+      }
+
+      this.s3Client = new S3Client(awsConfig);
 
       // Process image if transformations are specified
       const processedBlob = await this.imageProcessor.processImage(
@@ -36,34 +45,27 @@ export class S3Uploader {
         ? `${options.folder}/${fileName}`
         : fileName;
 
-      // Create upload parameters
-      const uploadParams: AWS.S3.PutObjectRequest = {
+      // Convert blob to buffer for better compatibility
+      const arrayBuffer = await processedBlob.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      // Create upload command without ACL (modern S3 buckets don't allow ACLs)
+      const uploadCommand = new PutObjectCommand({
         Bucket: options.bucket,
         Key: uploadPath,
-        Body: processedBlob,
+        Body: uint8Array,
         ContentType: processedBlob.type,
-        ACL: options.acl || 'public-read',
-      };
+      });
 
-      // Upload with progress tracking
-      const upload = this.s3.upload(uploadParams);
-      
-      if (options.onProgress) {
-        upload.on('httpUploadProgress', (progress) => {
-          const uploadProgress: UploadProgress = {
-            loaded: progress.loaded,
-            total: progress.total,
-            percentage: Math.round((progress.loaded / progress.total) * 100),
-          };
-          options.onProgress!(uploadProgress);
-        });
-      }
+      // Upload file
+      const result = await this.s3Client.send(uploadCommand);
 
-      const result = await upload.promise();
+      // Generate the URL (S3 v3 doesn't return Location in the same way)
+      const url = `https://${options.bucket}.s3.${options.region}.amazonaws.com/${uploadPath}`;
 
       // Return upload result
       const uploadResult: UploadResult = {
-        url: result.Location,
+        url,
         fileName,
         size: processedBlob.size,
         format: processedBlob.type.split('/')[1],

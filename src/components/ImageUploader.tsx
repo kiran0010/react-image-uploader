@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { UploadProgress } from './UploadProgress';
-import { uploadS3, uploadCloudinary, uploadFirebase } from '../api/uploadFunctions';
-import { S3UploadOptions, CloudinaryUploadOptions, FirebaseUploadOptions, UploadResult, UploadProgress as UploadProgressType } from '../types';
+import { uploadS3 } from '../api/uploadFunctions';
+import { S3UploadOptions, UploadResult, UploadProgress as UploadProgressType } from '../types';
 
-type UploadFunctionType = 's3' | 'cloudinary' | 'firebase';
+type UploadFunctionType = 's3';
 
 interface ImageUploaderProps {
   uploadType: UploadFunctionType;
-  uploadOptions: S3UploadOptions | CloudinaryUploadOptions | FirebaseUploadOptions;
+  uploadOptions: S3UploadOptions;
   onUploadComplete?: (result: UploadResult) => void;
   onUploadError?: (error: Error) => void;
   multiple?: boolean;
@@ -70,21 +70,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           },
         };
 
-        let result: UploadResult;
-
-        switch (uploadType) {
-          case 's3':
-            result = await uploadS3(options as S3UploadOptions);
-            break;
-          case 'cloudinary':
-            result = await uploadCloudinary(options as CloudinaryUploadOptions);
-            break;
-          case 'firebase':
-            result = await uploadFirebase(options as FirebaseUploadOptions);
-            break;
-          default:
-            throw new Error(`Unsupported upload type: ${uploadType}`);
-        }
+        const result = await uploadS3(options as S3UploadOptions);
 
         results.push(result);
         onUploadComplete?.(result);
